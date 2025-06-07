@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # ✅ Import CORS
 import nltk
 from nltk.stem import WordNetLemmatizer
 
@@ -50,8 +51,9 @@ def get_response(user_input):
             return response
     return patterns_responses["default"]
 
-# Flask app
+# Flask app setup
 app = Flask(__name__)
+CORS(app)  # ✅ Enable CORS
 
 @app.route("/")
 def index():
@@ -60,11 +62,13 @@ def index():
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.json
+    if not data or "message" not in data:
+        return jsonify({"response": "Invalid input, 'message' key missing."}), 400
     user_message = data.get("message", "")
     response = get_response(user_message)
     return jsonify({"response": response})
 
 if __name__ == "__main__":
     import os
-port = int(os.environ.get("PORT", 5000))
-app.run(debug=False, host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=False, host="0.0.0.0", port=port)
